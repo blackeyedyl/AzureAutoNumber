@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace AutoNumber.Exceptions
+namespace AutoNumber.Exceptions;
+
+public class UniqueIdGenerationException : Exception
 {
-    public class UniqueIdGenerationException : Exception
+    public UniqueIdGenerationException(string message)
+        : base(message)
     {
-        public UniqueIdGenerationException(string message)
-            : base(message)
-        {
-        }
     }
 }

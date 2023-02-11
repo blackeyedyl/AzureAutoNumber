@@ -4,6 +4,7 @@
     <RootNamespace>AutoNumber.UnitTests</RootNamespace>
     <AssemblyName>AutoNumber.UnitTests</AssemblyName>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <AssemblyTitle>UnitTests</AssemblyTitle>
     <Company>Microsoft</Company>

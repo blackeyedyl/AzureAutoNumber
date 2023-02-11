@@ -1,56 +1,40 @@
 ﻿using System;
+using AutoNumber.DataStores;
 using AutoNumber.Interfaces;
 using AutoNumber.Options;
-using Azure.Storage.Blobs;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AutoNumber
+namespace AutoNumber.Extensions;
+
+public static class ServiceCollectionExtensions
 {
-    public static class ServiceCollectionExtensions
+    public static IServiceCollection AddAutoNumber(this IServiceCollection services, IConfiguration configuration,
+        Func<AutoNumberOptionsBuilder, AutoNumberOptions> builder)
     {
-        private const string AutoNumber = "AutoNumber";
+        if (builder == null)
+            throw new ArgumentNullException(nameof(builder));
 
-        [Obsolete("This method is deprecated, please use AddAutoNumber with options builder.", false)]
-        public static IServiceCollection AddAutoNumber(this IServiceCollection services)
+        var builderOptions = new AutoNumberOptionsBuilder(configuration);
+        var options = builder(builderOptions);
+
+        services.AddSingleton<IOptimisticDataStore, CosmosDbOptimisticDataStore>(x =>
         {
-            services.AddOptions<AutoNumberOptions>()
-                .Configure<IConfiguration>((settings, configuration)
-                    => configuration.GetSection(AutoNumber).Bind(settings));
+            CosmosClient cosmosClient;
+            if (options.Client != null)
+                cosmosClient = options.Client;
+            else if (options.ConnectionString == null)
+                cosmosClient = x.GetService<CosmosClient>();
+            else
+                cosmosClient = new CosmosClient(options.ConnectionString);
 
-            services.AddSingleton<IOptimisticDataStore, BlobOptimisticDataStore>();
-            services.AddSingleton<IUniqueIdGenerator, UniqueIdGenerator>();
+            return new CosmosDbOptimisticDataStore(cosmosClient, options);
+        });
 
-            return services;
-        }
+        services.AddSingleton<IUniqueIdGenerator, UniqueIdGenerator>(x
+            => new UniqueIdGenerator(x.GetService<IOptimisticDataStore>(), options));
 
-        public static IServiceCollection AddAutoNumber(this IServiceCollection services, IConfiguration configuration,
-            Func<AutoNumberOptionsBuilder, AutoNumberOptions> builder)
-        {
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
-
-            var builderOptions = new AutoNumberOptionsBuilder(configuration);
-            var options = builder(builderOptions);
-
-            services.AddSingleton<IOptimisticDataStore, BlobOptimisticDataStore>(x =>
-            {
-                BlobServiceClient blobServiceClient = null;
-
-                if (options.BlobServiceClient != null)
-                    blobServiceClient = options.BlobServiceClient;
-                else if (options.StorageAccountConnectionString == null)
-                    blobServiceClient = x.GetService<BlobServiceClient>();
-                else
-                    blobServiceClient = new BlobServiceClient(options.StorageAccountConnectionString);
-
-                return new BlobOptimisticDataStore(blobServiceClient, options.StorageContainerName);
-            });
-
-            services.AddSingleton<IUniqueIdGenerator, UniqueIdGenerator>(x
-                => new UniqueIdGenerator(x.GetService<IOptimisticDataStore>(), options));
-
-            return services;
-        }
+        return services;
     }
 }

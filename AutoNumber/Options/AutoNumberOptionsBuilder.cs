@@ -1,92 +1,81 @@
 ﻿using System;
-using Azure.Storage.Blobs;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 
-namespace AutoNumber.Options
+namespace AutoNumber.Options;
+
+public class AutoNumberOptionsBuilder
 {
-    public class AutoNumberOptionsBuilder
+    private const string AutoNumber = "AutoNumber";
+    private readonly IConfiguration _configuration;
+
+    public AutoNumberOptionsBuilder(IConfiguration configuration)
     {
-        private const string DefaultContainerName = "unique-urls";
-        private const string AutoNumber = "AutoNumber";
-        private readonly IConfiguration _configuration;
+        _configuration = configuration;
+        configuration.GetSection(AutoNumber).Bind(Options);
+    }
 
-        public AutoNumberOptionsBuilder(IConfiguration configuration)
-        {
-            _configuration = configuration;
-            configuration.GetSection(AutoNumber).Bind(Options);
-        }
+    public AutoNumberOptions Options { get; } = new();
 
-        public AutoNumberOptions Options { get; } = new AutoNumberOptions();
+    /// <summary>
+    ///     Uses the default StorageAccount already defined in dependency injection
+    /// </summary>
+    public AutoNumberOptionsBuilder UseDefaultStorageAccount()
+    {
+        Options.ConnectionString = null;
+        return this;
+    }
 
-        /// <summary>
-        ///     Uses the default StorageAccount already defined in dependency injection
-        /// </summary>
-        public AutoNumberOptionsBuilder UseDefaultStorageAccount()
-        {
-            Options.StorageAccountConnectionString = null;
-            return this;
-        }
+    /// <summary>
+    ///     Uses an Azure CosmosDB connection string to init the cosmos client
+    /// </summary>
+    /// <param name="connectionStringSection"></param>
+    public AutoNumberOptionsBuilder UseConnectionStringSection(string connectionStringSection)
+    {
+        if (string.IsNullOrEmpty(connectionStringSection))
+            throw new ArgumentNullException(nameof(connectionStringSection));
 
-        /// <summary>
-        ///     Uses an Azure StorageAccount connection string to init the blob storage
-        /// </summary>
-        /// <param name="connectionStringOrName"></param>
-        public AutoNumberOptionsBuilder UseStorageAccount(string connectionStringOrName)
-        {
-            if (string.IsNullOrEmpty(connectionStringOrName))
-                throw new ArgumentNullException(nameof(connectionStringOrName));
+        Options.ConnectionString =
+            _configuration.GetSection(connectionStringSection).Value;
 
-            Options.StorageAccountConnectionString =
-                _configuration.GetConnectionString(connectionStringOrName) ?? connectionStringOrName;
+        return this;
+    }
 
-            return this;
-        }
+    public AutoNumberOptionsBuilder UseCosmosServiceClient(CosmosClient cosmosClient)
+    {
+        Options.Client = cosmosClient
+                         ?? throw new ArgumentNullException(nameof(cosmosClient));
 
-        public AutoNumberOptionsBuilder UseBlobServiceClient(BlobServiceClient blobServiceClient)
-        {
-            Options.BlobServiceClient = blobServiceClient
-                                        ?? throw new ArgumentNullException(nameof(blobServiceClient));
+        return this;
+    }
 
-            return this;
-        }
+    /// <summary>
+    ///     Max retrying to generate unique id
+    /// </summary>
+    /// <param name="attempts"></param>
+    public AutoNumberOptionsBuilder SetMaxWriteAttempts(int attempts = 100)
+    {
+        Options.MaxWriteAttempts = attempts;
+        return this;
+    }
 
-        /// <summary>
-        ///     Default container name to store latest generated id on Azure blob storage
-        /// </summary>
-        public AutoNumberOptionsBuilder UseDefaultContainerName()
-        {
-            Options.StorageContainerName = DefaultContainerName;
-            return this;
-        }
+    /// <summary>
+    ///     BatchSize for id generation, higher the value more losing unused id
+    /// </summary>
+    /// <param name="batchSize"></param>
+    public AutoNumberOptionsBuilder SetBatchSize(int batchSize = 100)
+    {
+        Options.BatchSize = batchSize;
+        return this;
+    }
 
-        /// <summary>
-        ///     Container name for storing latest generated id on Azure blob storage
-        /// </summary>
-        /// <param name="containerName"></param>
-        public AutoNumberOptionsBuilder UseContainerName(string containerName)
-        {
-            Options.StorageContainerName = containerName;
-            return this;
-        }
-
-        /// <summary>
-        ///     Max retrying to generate unique id
-        /// </summary>
-        /// <param name="attempts"></param>
-        public AutoNumberOptionsBuilder SetMaxWriteAttempts(int attempts = 100)
-        {
-            Options.MaxWriteAttempts = attempts;
-            return this;
-        }
-
-        /// <summary>
-        ///     BatchSize for id generation, higher the value more losing unused id
-        /// </summary>
-        /// <param name="batchSize"></param>
-        public AutoNumberOptionsBuilder SetBatchSize(int batchSize = 100)
-        {
-            Options.BatchSize = batchSize;
-            return this;
-        }
+    /// <summary>
+    ///     Set Cosmos Database Id
+    /// </summary>
+    /// <param name="databaseId">Database identifier</param>
+    public AutoNumberOptionsBuilder SetDatabaseId(string databaseId)
+    {
+        Options.DatabaseId = databaseId;
+        return this;
     }
 }

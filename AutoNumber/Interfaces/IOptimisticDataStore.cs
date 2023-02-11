@@ -1,14 +1,19 @@
 ﻿using System.Threading.Tasks;
+using AutoNumber.Documents;
 
-namespace AutoNumber.Interfaces
+namespace AutoNumber.Interfaces;
+
+public interface IOptimisticDataStore
 {
-    public interface IOptimisticDataStore
-    {
-        string GetData(string blockName);
-        Task<string> GetDataAsync(string blockName);
-        bool TryOptimisticWrite(string blockName, string data);
-        Task<bool> TryOptimisticWriteAsync(string blockName, string data);
-        Task<bool> InitAsync();
-        bool Init();
-    }
+    AutoNumberState GetAutoNumberState(string scopeName);
+    
+    Task<AutoNumberState> GetAutoNumberStateAsync(string scopeName);
+    
+    bool TryOptimisticWrite(AutoNumberState autoNumberState);
+    
+    Task<bool> TryOptimisticWriteAsync(AutoNumberState autoNumberState);
+    
+    Task<bool> InitializeAsync();
+    
+    bool Initialize();
 }

@@ -1,9 +1,8 @@
-namespace AutoNumber
+namespace AutoNumber;
+
+internal class ScopeState
 {
-    internal class ScopeState
-    {
-        public readonly object IdGenerationLock = new object();
-        public long HighestIdAvailableInBatch;
-        public long LastId;
-    }
+    public readonly object IdGenerationLock = new();
+    public long HighestIdAvailableInBatch;
+    public long LastId;
 }
