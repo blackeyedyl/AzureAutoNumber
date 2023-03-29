@@ -6,7 +6,7 @@
     <AssemblyTitle>AzureAutoNumber</AssemblyTitle>
     <Product>AzureAutoNumber</Product>
     <Description>High performance, distributed unique id generator for Azure environments.</Description>
-    <Version>1.5.0</Version>
+    <Version>1.5.2</Version>
     <LangVersion>latest</LangVersion>
     <AssemblyVersion>1.5.0.0</AssemblyVersion>
     <FileVersion>1.5.0.0</FileVersion>
@@ -19,9 +19,9 @@
     <AssemblyName>AutoNumber</AssemblyName>
     <RootNamespace>AutoNumber</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageReleaseNotes>Use Cosmos DB as optimistic data store instead of Blob Storage.</PackageReleaseNotes>
+    <PackageReleaseNotes>Use West Europe Cosmos Db instance for both reads and writes.</PackageReleaseNotes>
     <PackageId>AzureAutoNumber</PackageId>
-    <PackageVersion>1.5.0</PackageVersion>
+    <PackageVersion>1.5.2</PackageVersion>
     <SignAssembly>False</SignAssembly>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -31,7 +31,6 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.13.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.32.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.2" />

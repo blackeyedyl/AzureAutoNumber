@@ -17,7 +17,7 @@ internal class CosmosDbOptimisticDataStore : IOptimisticDataStore
     public CosmosDbOptimisticDataStore(CosmosClient cosmosClient, AutoNumberOptions options)
     {
         _cosmosClient = cosmosClient ?? throw new ArgumentNullException(nameof(cosmosClient));
-        _options = options ?? throw new ArgumentNullException(nameof(options)); ;
+        _options = options ?? throw new ArgumentNullException(nameof(options));
             
         _container = cosmosClient.GetContainer(options.DatabaseId, options.ContainerName);
     }
@@ -134,7 +134,7 @@ internal class CosmosDbOptimisticDataStore : IOptimisticDataStore
 
     private async Task<AutoNumberState> InitializeAutoNumberStateForScopeAsync(string scopeName)
     {
-        if (!_options.InitialScopesAvailableNumber.TryGetValue(scopeName, out var initialAvailableNumber))
+        if (_options.InitialScopesAvailableNumber is null || !_options.InitialScopesAvailableNumber.TryGetValue(scopeName, out var initialAvailableNumber))
         {
             initialAvailableNumber = 1;
         }
@@ -162,7 +162,7 @@ internal class CosmosDbOptimisticDataStore : IOptimisticDataStore
 
     private AutoNumberState InitializeAutoNumberStateForScope(string scopeName)
     {
-        if (!_options.InitialScopesAvailableNumber.TryGetValue(scopeName, out var initialAvailableNumber))
+        if (_options.InitialScopesAvailableNumber is null || !_options.InitialScopesAvailableNumber.TryGetValue(scopeName, out var initialAvailableNumber))
         {
             initialAvailableNumber = 1;
         }
