@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using AutoNumber.DataStores;
 using AutoNumber.Interfaces;
 using AutoNumber.Options;
@@ -31,8 +30,7 @@ public static class ServiceCollectionExtensions
             else
                 cosmosClient = new CosmosClient(options.ConnectionString, new CosmosClientOptions
                 {
-                    ApplicationRegion = Regions.WestEurope,
-                    ApplicationPreferredRegions = new List<string> { Regions.WestEurope }
+                    ApplicationRegion = Regions.WestEurope
                 });
 
             return new CosmosDbOptimisticDataStore(cosmosClient, options);
